@@ -510,7 +510,7 @@ export default async function build(dir: string, conf = null): Promise<void> {
       let ssgPageRoutes: string[] | null = null
       let hasSsgFallback: boolean = false
 
-      pagesManifest[page] = bundleRelative.replace(/\\/g, '/')
+      pagesManifest[actualPage] = bundleRelative.replace(/\\/g, '/')
 
       const nonReservedPage = !page.match(/^\/(_app|_error|_document|api)/)
 
@@ -542,14 +542,14 @@ export default async function build(dir: string, conf = null): Promise<void> {
       if (nonReservedPage) {
         try {
           let result = await staticCheckWorkers.isPageStatic(
-            page,
+            actualPage,
             serverBundle,
             runtimeEnvConfig
           )
 
           if (result.isHybridAmp) {
             isHybridAmp = true
-            hybridAmpPages.add(page)
+            hybridAmpPages.add(actualPage)
           }
 
           if (result.isAmpOnly) {
@@ -577,21 +577,21 @@ export default async function build(dir: string, conf = null): Promise<void> {
           }
 
           if (result.hasStaticProps) {
-            ssgPages.add(page)
+            ssgPages.add(actualPage)
             isSsg = true
 
             if (result.prerenderRoutes) {
-              additionalSsgPaths.set(page, result.prerenderRoutes)
+              additionalSsgPaths.set(actualPage, result.prerenderRoutes)
               ssgPageRoutes = result.prerenderRoutes
             }
             if (result.prerenderFallback) {
               hasSsgFallback = true
-              ssgFallbackPages.add(page)
+              ssgFallbackPages.add(actualPage)
             }
           } else if (result.hasServerProps) {
-            serverPropsPages.add(page)
+            serverPropsPages.add(actualPage)
           } else if (result.isStatic && customAppGetInitialProps === false) {
-            staticPages.add(page)
+            staticPages.add(actualPage)
             isStatic = true
           }
 
@@ -607,11 +607,11 @@ export default async function build(dir: string, conf = null): Promise<void> {
           }
         } catch (err) {
           if (err.message !== 'INVALID_DEFAULT_EXPORT') throw err
-          invalidPages.add(page)
+          invalidPages.add(actualPage)
         }
       }
 
-      pageInfos.set(page, {
+      pageInfos.set(actualPage, {
         size: selfSize,
         totalSize: allSize,
         serverBundle,
@@ -666,7 +666,7 @@ export default async function build(dir: string, conf = null): Promise<void> {
       }
 
       return {
-        page,
+        pagePath,
         routeKeys,
         dataRouteRegex,
         namedDataRouteRegex,
@@ -787,6 +787,7 @@ export default async function build(dir: string, conf = null): Promise<void> {
       ext: 'html' | 'json'
     ) => {
       file = `${file}.${ext}`
+      file = decodeURIComponent(file)
       const orig = path.join(exportOptions.outdir, file)
       const relativeDest = (isLikeServerless
         ? path.join('pages', file)

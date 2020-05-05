@@ -159,6 +159,7 @@ export async function setSprCache(
   if (typeof revalidateSeconds !== 'undefined') {
     // TODO: Update this to not mutate the manifest from the
     // build.
+    pathname = decodeURIComponent(pathname)
     prerenderManifest.routes[pathname] = {
       dataRoute: path.posix.join(
         '/_next/data',

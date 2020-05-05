@@ -1,5 +1,6 @@
 import { posix } from 'path'
 export function normalizePagePath(page: string): string {
+  page = decodeURIComponent(page)
   // If the page is `/` we need to append `/index`, otherwise the returned directory root will be bundles instead of pages
   if (page === '/') {
     page = '/index'
